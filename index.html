@@ -647,7 +647,7 @@ function renderResults(scores){
 }
 
 function buildRadar(scores, keys){
-  const cx=170, cy=160, R=105, n=keys.length;
+  const cx=220, cy=180, R=90, n=keys.length;
   const angle = i => (Math.PI*2*i/n) - Math.PI/2;
   const point = (i, r) => [cx + Math.cos(angle(i))*r, cy + Math.sin(angle(i))*r];
 
@@ -667,7 +667,7 @@ function buildRadar(scores, keys){
   }).join(" ");
 
   const labels = keys.map((k,i)=>{
-    const [x,y]=point(i,R+22);
+    const [x,y]=point(i,R+20);
     let anchor="middle";
     if(x < cx-10) anchor="end"; else if(x > cx+10) anchor="start";
     const short = SCALES[k].name.replace("Empathy & Compassion","Empathy").replace("Gratitude & Presence","Gratitude").replace("Interconnectedness","Interconnected.");
@@ -680,7 +680,7 @@ function buildRadar(scores, keys){
     return `<circle cx="${x}" cy="${y}" r="3.5" fill="var(--blue)"/>`;
   }).join("");
 
-  return `<svg viewBox="0 0 340 320" width="100%" style="max-width:420px" role="img" aria-label="Radar chart of your eight scale scores">
+  return `<svg viewBox="0 0 440 360" width="100%" style="max-width:480px" role="img" aria-label="Radar chart of your eight scale scores">
     ${grid}${spokes}
     <polygon points="${dataPts}" fill="rgba(75,130,195,0.18)" stroke="var(--blue)" stroke-width="2"/>
     ${dots}${labels}
