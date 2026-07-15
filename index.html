@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Room for Phonies · WVI-32 Worldview Inventory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Archivo:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* No Room for Phonies — brand palette v1.0 */
+  --paper:#F3E8D2;         /* Soft Linen — backgrounds */
+  --card:#FBF5E9;          /* lighter linen — cards */
+  --ink:#356D71;           /* Deep Teal — text on light */
+  --primary:#4E8C89;       /* Evergreen — buttons, headings, icons */
+  --primary-deep:#356D71;  /* Deep Teal — hovers, strong text */
+  --primary-soft:#DCE9E2;  /* evergreen tint — selected states */
+  --accent:#D9A548;        /* Warm Gold — highlights, attention */
+  --gold-deep:#96702A;     /* legible gold for small labels */
+  --sage:#A9BF9A;          /* Fresh Sage — supporting graphics */
+  --sage-soft:#E6ECDB;     /* sage tint — hover fills */
+  --blue:#4B82C3;          /* Conversation Blue — charts only */
+  --coral:#C96A66;         /* Warm Coral — notifications */
+  --coral-deep:#A94F4B;    /* legible coral for small text */
+  --plum:#78638E;          /* Reflective Plum — growth/reflection tags */
+  --muted:#6C7A6D;         /* muted sage-gray — captions */
+  --line:#E2D5B8;          /* linen border */
+  --radius:14px;           /* rounded, organic */
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:17px;
+  line-height:1.6;
+  min-height:100vh;
+}
+.mono{font-family:"IBM Plex Mono",monospace}
+.wrap{max-width:720px;margin:0 auto;padding:0 20px 80px}
+
+/* ---------- top bar ---------- */
+.topbar{
+  border-bottom:1px solid var(--line);
+  background:var(--card);
+  position:sticky;top:0;z-index:10;
+}
+.topbar-inner{
+  max-width:720px;margin:0 auto;padding:14px 20px;
+  display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+}
+.instrument-code{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:13px;letter-spacing:.08em;color:var(--primary-deep);font-weight:600;
+}
+.topbar-note{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);letter-spacing:.04em}
+
+/* ---------- intro ---------- */
+.screen{display:none;animation:fadein .35s ease}
+.screen.active{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .screen{animation:none}
+  html{scroll-behavior:auto}
+}
+
+.hero{padding:56px 0 8px}
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--gold-deep);font-weight:600;margin-bottom:14px;
+}
+h1{
+  font-family:"Fraunces",serif;font-weight:600;
+  font-size:clamp(34px,6vw,50px);line-height:1.05;letter-spacing:-.02em;
+  margin-bottom:18px;
+}
+h1 .thin{color:var(--primary)}
+.lede{font-size:18px;color:var(--ink);max-width:56ch;margin-bottom:10px}
+.sub{color:var(--muted);font-size:15.5px;max-width:58ch}
+
+.spec-table{
+  margin:34px 0 30px;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--card);overflow:hidden;
+}
+.spec-row{
+  display:flex;justify-content:space-between;gap:16px;
+  padding:12px 18px;border-bottom:1px solid var(--line);
+  font-size:14.5px;
+}
+.spec-row:last-child{border-bottom:none}
+.spec-row dt{font-family:"IBM Plex Mono",monospace;font-size:12.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;padding-top:2px}
+.spec-row dd{text-align:right;font-weight:500}
+
+.email-block{margin:8px 0 26px}
+label.field-label{
+  display:block;font-family:"IBM Plex Mono",monospace;font-size:12.5px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;
+}
+input[type=email]{
+  width:100%;padding:14px 16px;font-size:16px;font-family:inherit;
+  border:1.5px solid var(--line);border-radius:var(--radius);
+  background:var(--card);color:var(--ink);
+}
+input[type=email]:focus{outline:3px solid var(--primary-soft);border-color:var(--primary)}
+.field-hint{font-size:13.5px;color:var(--muted);margin-top:7px}
+.field-error{display:none;font-size:13.5px;color:var(--coral-deep);margin-top:7px;font-weight:500}
+
+.opt-in-row{
+  display:flex;align-items:flex-start;gap:11px;margin-top:16px;
+  cursor:pointer;user-select:none;
+}
+.opt-in-row input[type=checkbox]{
+  appearance:none;-webkit-appearance:none;
+  width:20px;height:20px;flex:none;margin-top:1px;
+  border:1.5px solid var(--line);border-radius:5px;
+  background:var(--card);cursor:pointer;position:relative;
+  transition:background .12s, border-color .12s;
+}
+.opt-in-row input[type=checkbox]:checked{
+  background:var(--primary);border-color:var(--primary);
+}
+.opt-in-row input[type=checkbox]:checked::after{
+  content:"";position:absolute;left:6px;top:2px;
+  width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;
+  transform:rotate(40deg);
+}
+.opt-in-row input[type=checkbox]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.opt-in-row span{font-size:14.5px;color:var(--muted);line-height:1.5}
+
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--primary);color:#fff;border:none;cursor:pointer;
+  font-family:"Archivo",sans-serif;font-weight:700;font-size:16.5px;letter-spacing:.01em;
+  padding:15px 32px;border-radius:999px;
+  transition:background .15s ease, transform .1s ease;
+}
+.btn:hover{background:var(--primary-deep)}
+.btn:active{transform:translateY(1px)}
+.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn.secondary{background:transparent;color:var(--primary);border:1.5px solid var(--primary)}
+.btn.secondary:hover{background:var(--primary-soft)}
+
+.disclaimer{
+  margin-top:34px;padding:14px 18px;border-left:3px solid var(--accent);
+  background:var(--card);border-radius:0 var(--radius) var(--radius) 0;
+  font-size:13.5px;color:var(--muted);
+}
+
+/* ---------- test ---------- */
+.progress-shell{margin:44px 0 10px;display:flex;justify-content:space-between;align-items:baseline}
+.item-counter{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--muted);letter-spacing:.06em}
+.item-counter b{color:var(--primary);font-weight:600}
+.scale-tag{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);letter-spacing:.1em}
+.progress-track{height:5px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:40px}
+.progress-fill{height:100%;width:0;background:var(--primary);border-radius:99px;transition:width .25s ease}
+@media (prefers-reduced-motion:reduce){.progress-fill{transition:none}}
+
+.question-card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:34px 32px 30px;
+}
+.q-text{
+  font-family:"Fraunces",serif;font-weight:600;font-size:clamp(20px,3.4vw,25px);
+  line-height:1.35;letter-spacing:-.01em;margin-bottom:30px;min-height:3.6em;
+}
+.likert{display:flex;flex-direction:column;gap:9px}
+.likert button{
+  display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+  padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;
+  background:var(--paper);color:var(--ink);font-family:inherit;font-size:15.5px;
+  cursor:pointer;transition:border-color .12s, background .12s;
+}
+.likert button:hover{border-color:var(--primary);background:var(--sage-soft)}
+.likert button:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.likert .dot{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;
+  width:26px;height:26px;border-radius:50%;flex:none;
+  display:flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--muted);color:var(--muted);
+}
+.likert button:hover .dot{border-color:var(--primary);color:var(--primary)}
+.nav-row{display:flex;justify-content:space-between;margin-top:22px}
+.link-btn{
+  background:none;border:none;color:var(--muted);font-family:"IBM Plex Mono",monospace;
+  font-size:13px;letter-spacing:.05em;cursor:pointer;padding:8px 4px;
+}
+.link-btn:hover{color:var(--primary);text-decoration:underline}
+.link-btn:focus-visible{outline:3px solid var(--accent)}
+
+/* ---------- results ---------- */
+.results-head{padding:52px 0 4px}
+.profile-name{
+  font-family:"Fraunces",serif;font-weight:600;
+  font-size:clamp(30px,5.4vw,44px);letter-spacing:-.02em;line-height:1.08;
+  color:var(--primary);margin-bottom:12px;
+}
+.results-grid{display:grid;grid-template-columns:1fr;gap:26px;margin-top:34px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px 28px 26px}
+.panel h2{
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;
+}
+.radar-wrap{display:flex;justify-content:center}
+.axis-label{font-family:"IBM Plex Mono",monospace;font-size:10.5px;fill:var(--muted);letter-spacing:.03em}
+
+.bar-row{display:grid;grid-template-columns:190px 1fr 52px;gap:12px;align-items:center;margin-bottom:13px}
+.bar-name{font-size:14.5px;font-weight:500}
+.bar-track{height:9px;background:var(--paper);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;background:var(--blue);border-radius:99px}
+.bar-fill.low{background:var(--accent)}
+.bar-score{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted);text-align:right}
+
+.spectrum{margin-top:6px}
+.spectrum-track{position:relative;height:9px;background:linear-gradient(90deg,var(--primary),var(--paper) 50%,var(--accent));border-radius:99px;border:1px solid var(--line)}
+.spectrum-marker{
+  position:absolute;top:50%;width:18px;height:18px;border-radius:50%;
+  background:var(--primary-deep);border:3px solid var(--card);box-shadow:0 1px 4px rgba(0,0,0,.25);
+  transform:translate(-50%,-50%);
+}
+.spectrum-labels{display:flex;justify-content:space-between;margin-top:10px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);letter-spacing:.05em}
+
+.advice h3{
+  font-family:"Fraunces",serif;font-weight:600;font-size:20px;
+  margin:22px 0 8px;letter-spacing:-.01em;
+}
+.advice h3:first-of-type{margin-top:0}
+.advice h3 .tag{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;letter-spacing:.1em;
+  color:var(--plum);text-transform:uppercase;display:block;margin-bottom:4px;
+}
+.advice p{font-size:15.5px;margin-bottom:10px;color:var(--ink)}
+.strength-list{font-size:15.5px;color:var(--ink)}
+.strength-list b{color:var(--primary-deep)}
+
+.send-status{font-family:"IBM Plex Mono",monospace;font-size:12.5px;margin-top:14px;color:var(--muted)}
+.send-status.ok{color:var(--primary-deep)}
+.send-status.err{color:var(--coral-deep)}
+.footer-note{margin-top:36px;font-size:13px;color:var(--muted);text-align:center}
+
+@media (max-width:560px){
+  .bar-row{grid-template-columns:120px 1fr 44px}
+  .question-card{padding:26px 20px 24px}
+  .q-text{min-height:0}
+  .spec-row dd{text-align:right}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <span class="instrument-code">NO ROOM FOR PHONIES · WVI-32</span>
+    <span class="topbar-note">FOR EDUCATIONAL PURPOSES ONLY</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ================= INTRO ================= -->
+  <section class="screen active" id="screen-intro">
+    <div class="hero">
+      <div class="eyebrow">Episode 164 · How do you view the world?</div>
+      <h1>What lens are you <span class="thin">looking through?</span></h1>
+      <p class="lede">Your worldview is the invisible lens through which you interpret experience, weigh choices, and make sense of other people. This 32-item inventory maps yours across eight orientations.</p>
+      <p class="sub">Answer honestly, not aspirationally — rate how you actually think and act on a typical day, not how you'd like to.</p>
+    </div>
+
+    <dl class="spec-table">
+      <div class="spec-row"><dt>Items</dt><dd>32 statements · 5-point agreement scale</dd></div>
+      <div class="spec-row"><dt>Scales</dt><dd>8 orientations · 4 items each</dd></div>
+      <div class="spec-row"><dt>Duration</dt><dd>About 6–8 minutes</dd></div>
+      <div class="spec-row"><dt>Output</dt><dd>Lens profile, orientation spectrum &amp; growth practices</dd></div>
+    </dl>
+
+    <div class="email-block">
+      <label class="field-label" for="email">Email address</label>
+      <input type="email" id="email" name="email" autocomplete="email" placeholder="you@example.com" required>
+      <div class="field-hint">Your results summary is linked to this address.</div>
+      <div class="field-error" id="email-error">Please enter a valid email address to begin.</div>
+
+      <label class="opt-in-row" for="opt-in">
+        <input type="checkbox" id="opt-in" name="opt-in">
+        <span>Keep me posted on future episodes and activities like this one (about 4 emails a year). You can unsubscribe anytime.</span>
+      </label>
+    </div>
+
+    <button class="btn" id="btn-start">Begin the inventory →</button>
+
+    <div class="disclaimer">
+      <b>Please note:</b> The WVI-32 is a self-reflection exercise created for a podcast episode. It is for educational and entertainment purposes only. It is not a validated psychometric instrument and makes no diagnostic, psychological, or scientific claims.
+    </div>
+  </section>
+
+  <!-- ================= TEST ================= -->
+  <section class="screen" id="screen-test">
+    <div class="progress-shell">
+      <span class="item-counter">Item <b id="item-num">01</b> / 32</span>
+      <span class="scale-tag" id="scale-tag">SCALE A</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+
+    <div class="question-card">
+      <p class="q-text" id="q-text"></p>
+      <div class="likert" id="likert" role="group" aria-label="Agreement scale"></div>
+      <div class="nav-row">
+        <button class="link-btn" id="btn-back">← previous item</button>
+        <span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RESULTS ================= -->
+  <section class="screen" id="screen-results">
+    <div class="results-head">
+      <div class="eyebrow">Your lens profile</div>
+      <div class="profile-name" id="profile-name"></div>
+      <p class="lede" id="profile-summary"></p>
+    </div>
+
+    <div class="results-grid">
+
+      <div class="panel">
+        <h2>Orientation map — eight scales</h2>
+        <div class="radar-wrap" id="radar"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Inward ↔ Outward orientation</h2>
+        <p class="sub" style="margin-bottom:18px">Inward orientation reflects observation, presence, and inner growth. Outward orientation reflects seeing others, adjusting your efforts, and measuring your impact on them. Most integrated worldviews draw on both.</p>
+        <div class="spectrum">
+          <div class="spectrum-track"><div class="spectrum-marker" id="spectrum-marker"></div></div>
+          <div class="spectrum-labels"><span>INWARD</span><span>BALANCED</span><span>OUTWARD</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Scale scores</h2>
+        <div id="bars"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Where your lens is clearest</h2>
+        <div class="strength-list" id="strengths"></div>
+      </div>
+
+      <div class="panel advice">
+        <h2>Practices for growth</h2>
+        <div id="advice"></div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:28px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+      <button class="btn secondary" id="btn-retake">Retake the inventory</button>
+      <span class="send-status" id="send-status"></span>
+    </div>
+
+    <p class="footer-note">WVI-32 · A self-reflection companion to Episode 164 of <i>No Room for Phonies</i> · For educational purposes only — not a validated psychological assessment.</p>
+  </section>
+
+</div>
+
+<script>
+/* =========================================================
+   CONFIGURATION — the one thing you must edit before launch
+   =========================================================
+   1. Create a free form at https://formspree.io
+   2. Copy your form endpoint (looks like https://formspree.io/f/abcdwxyz)
+   3. Paste it below. Every completed test will then land in your
+      Formspree inbox with the taker's email + full scores.
+*/
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
+
+/* ---------- the eight scales ---------- */
+const SCALES = {
+  BM: {name:"Beginner's Mind",        group:"inward"},
+  CU: {name:"Curiosity",              group:"outward"},
+  HU: {name:"Humility",               group:"outward"},
+  DE: {name:"Detachment",             group:"inward"},
+  EC: {name:"Empathy & Compassion",   group:"outward"},
+  IC: {name:"Interconnectedness",     group:"outward"},
+  GM: {name:"Growth Mindset",         group:"inward"},
+  GP: {name:"Gratitude & Presence",   group:"inward"}
+};
+
+/* ---------- 32 items, 4 per scale, interleaved ---------- */
+const ITEMS = [
+  {s:"BM", t:"I approach familiar tasks and routines as if I were encountering them for the first time."},
+  {s:"CU", t:"I genuinely want to understand why people hold moral beliefs that differ from mine."},
+  {s:"HU", t:"In conversation, I focus on understanding the other person rather than planning my reply."},
+  {s:"DE", t:"I measure my success by the quality of my effort, not only by the outcome."},
+  {s:"EC", t:"I consciously imagine what it would feel like to walk another person's path."},
+  {s:"IC", t:"Before making choices, I consider the ripple effects on my community and beyond."},
+  {s:"GM", t:"I actively seek out challenges that stretch my current abilities."},
+  {s:"GP", t:"I find wonder in ordinary, everyday moments."},
+
+  {s:"BM", t:"I can set aside what I \u201Calready know\u201D when learning something new."},
+  {s:"CU", t:"I treat my opinions as hypotheses to test, not truths to defend."},
+  {s:"HU", t:"When I receive criticism, I assume positive intent and look for the lesson in it."},
+  {s:"DE", t:"I can observe my thoughts and emotions without immediately acting on them."},
+  {s:"EC", t:"I can validate someone's feelings even when I don't share their opinion."},
+  {s:"IC", t:"I see humans as part of nature's web, not separate from it."},
+  {s:"GM", t:"I interpret setbacks as useful feedback rather than proof of inadequacy."},
+  {s:"GP", t:"I regularly pause to appreciate what is going well in my life."},
+
+  {s:"BM", t:"I still notice new details in places I visit often."},
+  {s:"CU", t:"When I don't know something, I look it up rather than pretending to understand."},
+  {s:"HU", t:"I care more about discovering the truth of a situation than about being right."},
+  {s:"DE", t:"My sense of self-worth does not depend on praise or criticism from others."},
+  {s:"EC", t:"I seek out stories and perspectives from people whose backgrounds differ from mine."},
+  {s:"IC", t:"When groups disagree, I look for shared goals before dwelling on the differences."},
+  {s:"GM", t:"When I can't do something, I think \u201CI can't do this yet\u201D rather than \u201CI can't do this.\u201D"},
+  {s:"GP", t:"I can find meaning or lessons even during hardship, without pretending it doesn't hurt."},
+
+  {s:"BM", t:"Even when I'm confident about an outcome, I stay genuinely open to being surprised."},
+  {s:"CU", t:"I'm willing to discuss questions that make me ideologically uncomfortable."},
+  {s:"HU", t:"I'm comfortable sharing credit and being one part of a larger team or community."},
+  {s:"DE", t:"I can love and support people without absorbing their moods or trying to fix their circumstances."},
+  {s:"EC", t:"I treat my own struggles with the same care I would offer a good friend."},
+  {s:"IC", t:"I adapt well and stay open when I'm in unfamiliar cultures or environments."},
+  {s:"GM", t:"Other people's success inspires me more than it threatens me."},
+  {s:"GP", t:"Time outdoors or in nature noticeably restores my mood and attention."}
+];
+
+const LIKERT = [
+  {v:1, label:"Strongly disagree"},
+  {v:2, label:"Disagree"},
+  {v:3, label:"Neither agree nor disagree"},
+  {v:4, label:"Agree"},
+  {v:5, label:"Strongly agree"}
+];
+
+/* ---------- growth advice (from the episode's strategy notes) ---------- */
+const ADVICE = {
+BM:`Zen teacher Shunryu Suzuki observed that "in the beginner's mind there are many possibilities, but in the expert's mind there are few." The invitation here is to release preconceptions — the quiet assumption that you already know what's best or how things will turn out. Our brains naturally default to familiar patterns as we get comfortable in our skills and routines, so this takes deliberate effort. This week, pick one thing you do on autopilot — a commute, a meeting, a recipe — and approach it as if for the first time: no predictions, no shortcuts. Notice what shows up when you drop the script. Practiced regularly, this doesn't just fight hindsight and confirmation bias; it re-infuses ordinary experience with curiosity, playfulness, and gratitude.`,
+CU:`Curiosity grows when you treat your opinions as hypotheses rather than possessions. Try actively seeking out one piece of information this week that contradicts something you currently believe, and honestly check whether the belief holds up. Adopt the "curiosity rule": when you hit something you don't understand in a conversation or while working, don't nod along — pause and look it up within a minute. Make a habit of asking "how" and "why" one layer deeper than you normally would, and let your attention wander to details that seem irrelevant at first; that broad scope is where the brain connects ideas others filter out. Ambiguity isn't a threat to avoid — it's fuel.`,
+HU:`Humility is a practice, not a personality trait. Start with active listening: shift your focus from what you want to say next to truly understanding the other person's perspective. When someone offers criticism, assume positive intent and use it to scan for blind spots instead of mounting a defense. Try consciously shifting one conversation this week from "proving" to "learning" — stop trying to be the smartest person in the room and focus on discovering what's actually true in the situation. And watch the ego's small moves: the urge to one-up, to claim credit, to have the last word. You are one part of a larger community, and there's real freedom in that.`,
+DE:`Detachment isn't coldness — it's putting your energy where you actually have control. You control your effort; you never fully control the result. Commit hard to the process and let your self-worth uncouple from the outcome. Practice witnessing your thoughts as weather patterns passing through the sky of your mind — real, but not ultimate truths you must act on. Create a small pause between a trigger and your response. Before you speak up or post, ask: am I doing this because it aligns with my values, or to harvest a reaction? And let the people you love carry their own choices — you can support someone deeply without playing savior. Everything changes; fighting impermanence is where much of our suffering comes from.`,
+EC:`Empathy is a muscle, and it starts within — it's easier to recognize feelings in others once you can name your own. Try perspective-taking deliberately: when someone frustrates you this week, pause and ask, "If I had walked their path today, how would I feel?" Practice listening to understand rather than to reply, paying attention to tone and body language without interrupting. Widen your inputs: read fiction, watch films, and have conversations with people whose backgrounds and beliefs differ from yours. And remember you can validate without agreeing — reflecting someone's feelings back so they feel heard costs you nothing and changes everything. Extend that same care to yourself; you can't pour from an empty vessel.`,
+IC:`An interconnected worldview starts by noticing the ripple effect: your local choices have consequences beyond the moment, and global currents wash back into your daily life. Practice reframing "us vs. them" with superordinate labels — team, neighborhood, humanity — and name shared goals before litigating differences. Use open, curious questions to find common ground: shared challenges, hobbies, and hopes are usually hiding just under the surface of disagreement. Acknowledge someone's unique perspective first, then link it back to the common purpose. And remember the widest circle of all: humans aren't separate from nature but expressions of it, entirely dependent on its health.`,
+GM:`The single most useful word in a growth mindset is "yet." When you catch yourself thinking "I can't do this," add it: "I can't do this yet." Seek out one challenge this month specifically because it stretches you, and when setbacks arrive — they will — read them as feedback and stepping stones rather than a verdict on your talent. Reframe effort itself: hard work isn't evidence that you lack natural brilliance; it's the only vehicle mastery has ever traveled in. And when you see someone succeed at what you're attempting, let it be a syllabus instead of a threat — study what they did, borrow it, and be glad the path is provable.`,
+GP:`Gratitude is radical presence — appreciating the ordinary as extraordinary instead of postponing joy until some future achievement. Try closing each day by naming three specific things that went right, however small. Bring nature into the practice: a walk where you deliberately use all your senses — the rustle of leaves, birdsong, the feel of the breeze — or even just an open window and a houseplant near your desk. Take one routine activity outdoors this week and notice how movement plus fresh air breaks up cycles of rumination. In hard seasons, gratitude doesn't ask you to minimize the pain; it helps you extract meaning and light from it anyway, and it drives out alienation by reminding you that you belong to something.`
+};
+
+const STRENGTH_LINES = {
+BM:"You approach experience with fresh eyes, staying open to possibility instead of running on prediction.",
+CU:"You lean into questions, ambiguity, and even ideological discomfort — your opinions are working drafts, not fortresses.",
+HU:"You listen to understand, welcome feedback, and care more about finding the truth than winning the point.",
+DE:"You pour energy into the process and hold outcomes, praise, and criticism lightly.",
+EC:"You step into other people's shoes readily, and you validate feelings even where you don't share the view.",
+IC:"You naturally see the ripple effects connecting your choices to your community, other cultures, and the natural world.",
+GM:"You read challenges as invitations and setbacks as feedback — 'not yet' is your default setting.",
+GP:"You find wonder in ordinary moments and can pull meaning even out of hard seasons."
+};
+
+/* ---------- profile naming: top scale × orientation = 24 profiles ---------- */
+const PROFILE_ADJ = {
+BM:"Fresh-Eyed",
+CU:"Curious",
+HU:"Listening",
+DE:"Steady",
+EC:"Compassionate",
+IC:"Interwoven",
+GM:"Growth-Minded",
+GP:"Grateful"
+};
+
+const ORIENTATION_NOUN = {
+inward:"Observer",
+balanced:"Navigator",
+outward:"Connector"
+};
+
+const PROFILE_LEAD = {
+BM:"Your worldview is defined most by Beginner's Mind — you meet experience with fresh eyes, open to possibility rather than running on prediction.",
+CU:"Your worldview is defined most by Curiosity — you treat opinions as hypotheses and lean into questions others shy away from.",
+HU:"Your worldview is defined most by Humility — you listen to understand, welcome feedback, and would rather find the truth than win the point.",
+DE:"Your worldview is defined most by Detachment — you invest in the process and hold outcomes, praise, and criticism lightly.",
+EC:"Your worldview is defined most by Empathy & Compassion — you step readily into other people's shoes and meet struggle, including your own, with care.",
+IC:"Your worldview is defined most by Interconnectedness — you see the ripple effects linking your choices to your community, other cultures, and the natural world.",
+GM:"Your worldview is defined most by Growth Mindset — challenges read as invitations, setbacks as feedback, and 'not yet' is your default setting.",
+GP:"Your worldview is defined most by Gratitude & Presence — you find the extraordinary in ordinary moments and meaning even in hard seasons."
+};
+
+const ORIENTATION_LEAD = {
+inward:"That lens points inward: your energy flows first toward observation, presence, and inner growth, and the practices that stretch you tend to involve carrying that depth out to other people.",
+balanced:"That lens is balanced between inward and outward: you move fluidly between reading your own inner landscape and attending to the people and systems around you.",
+outward:"That lens points outward: your energy flows first toward seeing others clearly, adjusting your efforts to support them, and owning your impact, while the practices that stretch you tend to involve turning that attention back on yourself."
+};
+
+/* ---------- state ---------- */
+let current = 0;
+const answers = new Array(ITEMS.length).fill(null);
+let userEmail = "";
+let userOptIn = false;
+
+/* ---------- elements ---------- */
+const $ = id => document.getElementById(id);
+const screens = {intro:$("screen-intro"), test:$("screen-test"), results:$("screen-results")};
+
+function show(name){
+  Object.values(screens).forEach(s=>s.classList.remove("active"));
+  screens[name].classList.add("active");
+  window.scrollTo({top:0});
+}
+
+/* ---------- intro ---------- */
+$("btn-start").addEventListener("click", ()=>{
+  const email = $("email").value.trim();
+  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  $("email-error").style.display = valid ? "none" : "block";
+  if(!valid){ $("email").focus(); return; }
+  userEmail = email;
+  userOptIn = $("opt-in").checked;
+  current = 0;
+  renderQuestion();
+  show("test");
+});
+
+/* ---------- test ---------- */
+function renderQuestion(){
+  const item = ITEMS[current];
+  $("item-num").textContent = String(current+1).padStart(2,"0");
+  $("scale-tag").textContent = "SCALE " + String.fromCharCode(65 + Object.keys(SCALES).indexOf(item.s));
+  $("q-text").textContent = item.t;
+  $("progress-fill").style.width = (current/ITEMS.length*100) + "%";
+  $("btn-back").style.visibility = current===0 ? "hidden" : "visible";
+
+  const box = $("likert");
+  box.innerHTML = "";
+  LIKERT.forEach(opt=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.innerHTML = `<span class="dot">${opt.v}</span><span>${opt.label}</span>`;
+    if(answers[current]===opt.v){ b.style.borderColor="var(--primary)"; b.style.background="var(--primary-soft)"; }
+    b.addEventListener("click", ()=>{
+      answers[current] = opt.v;
+      if(current < ITEMS.length-1){ current++; renderQuestion(); }
+      else{ finish(); }
+    });
+    box.appendChild(b);
+  });
+}
+$("btn-back").addEventListener("click", ()=>{
+  if(current>0){ current--; renderQuestion(); }
+});
+
+/* ---------- scoring ---------- */
+function computeScores(){
+  const scores = {};
+  Object.keys(SCALES).forEach(k=>scores[k]=0);
+  ITEMS.forEach((item,i)=>{ scores[item.s] += answers[i] || 3; });
+  return scores; // each 4–20
+}
+
+function finish(){
+  const scores = computeScores();
+  renderResults(scores);
+  show("results");
+  submitResults(scores);
+}
+
+/* ---------- results rendering ---------- */
+function pct(score){ return Math.round((score-4)/16*100); }
+
+function renderResults(scores){
+  const keys = Object.keys(SCALES);
+  const sorted = [...keys].sort((a,b)=>scores[b]-scores[a]);
+  const top2 = sorted.slice(0,2);
+  const bottom2 = sorted.slice(-2).reverse();
+
+  // inward / outward
+  const inKeys = keys.filter(k=>SCALES[k].group==="inward");
+  const outKeys = keys.filter(k=>SCALES[k].group==="outward");
+  const inAvg = inKeys.reduce((s,k)=>s+scores[k],0)/inKeys.length;
+  const outAvg = outKeys.reduce((s,k)=>s+scores[k],0)/outKeys.length;
+  const diff = outAvg - inAvg; // negative = inward
+
+  /* profile name = top-scale adjective × orientation noun (24 combinations) */
+  let orientation;
+  if(Math.abs(diff) < 1.25) orientation = "balanced";
+  else orientation = diff < 0 ? "inward" : "outward";
+
+  const profile = "The " + PROFILE_ADJ[top2[0]] + " " + ORIENTATION_NOUN[orientation];
+  const summary =
+    PROFILE_LEAD[top2[0]] + " " +
+    ORIENTATION_LEAD[orientation] + " " +
+    `Alongside ${SCALES[top2[0]].name}, ${SCALES[top2[1]].name} is the next clearest feature of your lens; the growth practices below focus on the parts of your worldview with the most room to develop.`;
+
+  $("profile-name").textContent = profile;
+  $("profile-summary").textContent = summary;
+
+  // spectrum marker: diff range roughly -8..+8 mapped to 0..100
+  const pos = Math.max(4, Math.min(96, 50 + (diff/8)*46));
+  $("spectrum-marker").style.left = pos + "%";
+
+  // bars
+  const bars = $("bars");
+  bars.innerHTML = "";
+  sorted.forEach(k=>{
+    const isLow = bottom2.includes(k);
+    const row = document.createElement("div");
+    row.className = "bar-row";
+    row.innerHTML = `
+      <span class="bar-name">${SCALES[k].name}</span>
+      <div class="bar-track"><div class="bar-fill${isLow?" low":""}" style="width:${pct(scores[k])}%"></div></div>
+      <span class="bar-score">${scores[k]}/20</span>`;
+    bars.appendChild(row);
+  });
+
+  // radar
+  $("radar").innerHTML = buildRadar(scores, keys);
+
+  // strengths
+  $("strengths").innerHTML = top2.map(k=>
+    `<p style="margin-bottom:12px"><b>${SCALES[k].name} — ${pct(scores[k])}%.</b> ${STRENGTH_LINES[k]}</p>`
+  ).join("");
+
+  // advice for the two lowest scales
+  $("advice").innerHTML = bottom2.map(k=>
+    `<h3><span class="tag">Growth area · ${pct(scores[k])}%</span>${SCALES[k].name}</h3><p>${ADVICE[k]}</p>`
+  ).join("");
+}
+
+function buildRadar(scores, keys){
+  const cx=170, cy=160, R=105, n=keys.length;
+  const angle = i => (Math.PI*2*i/n) - Math.PI/2;
+  const point = (i, r) => [cx + Math.cos(angle(i))*r, cy + Math.sin(angle(i))*r];
+
+  let grid = "";
+  [0.25,0.5,0.75,1].forEach(f=>{
+    const pts = keys.map((_,i)=>point(i,R*f).join(",")).join(" ");
+    grid += `<polygon points="${pts}" fill="none" stroke="var(--line)" stroke-width="1"/>`;
+  });
+  let spokes = keys.map((_,i)=>{
+    const [x,y]=point(i,R);
+    return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--line)" stroke-width="1"/>`;
+  }).join("");
+
+  const dataPts = keys.map((k,i)=>{
+    const r = ((scores[k]-4)/16)*R;
+    return point(i, Math.max(r, 4)).join(",");
+  }).join(" ");
+
+  const labels = keys.map((k,i)=>{
+    const [x,y]=point(i,R+22);
+    let anchor="middle";
+    if(x < cx-10) anchor="end"; else if(x > cx+10) anchor="start";
+    const short = SCALES[k].name.replace("Empathy & Compassion","Empathy").replace("Gratitude & Presence","Gratitude").replace("Interconnectedness","Interconnected.");
+    return `<text x="${x}" y="${y+4}" text-anchor="${anchor}" class="axis-label">${short}</text>`;
+  }).join("");
+
+  const dots = keys.map((k,i)=>{
+    const r = ((scores[k]-4)/16)*R;
+    const [x,y]=point(i, Math.max(r,4));
+    return `<circle cx="${x}" cy="${y}" r="3.5" fill="var(--blue)"/>`;
+  }).join("");
+
+  return `<svg viewBox="0 0 340 320" width="100%" style="max-width:420px" role="img" aria-label="Radar chart of your eight scale scores">
+    ${grid}${spokes}
+    <polygon points="${dataPts}" fill="rgba(75,130,195,0.18)" stroke="var(--blue)" stroke-width="2"/>
+    ${dots}${labels}
+  </svg>`;
+}
+
+/* ---------- submission ---------- */
+async function submitResults(scores){
+  const status = $("send-status");
+  if(FORMSPREE_ENDPOINT.includes("YOUR_FORM_ID")){
+    status.textContent = "Demo mode — results not submitted (Formspree endpoint not configured).";
+    return;
+  }
+  status.textContent = "Saving your results…";
+  const payload = {
+    email: userEmail,
+    profile: $("profile-name").textContent,
+    newsletter_opt_in: userOptIn ? "YES — add to mailing list" : "No",
+    _subject: "WVI-32 result: " + userEmail
+  };
+  Object.keys(SCALES).forEach(k=>{
+    payload[SCALES[k].name] = scores[k] + "/20 (" + pct(scores[k]) + "%)";
+  });
+  payload["raw_answers"] = answers.join(",");
+  try{
+    const res = await fetch(FORMSPREE_ENDPOINT,{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body: JSON.stringify(payload)
+    });
+    if(res.ok){ status.textContent = "✓ Results saved. Check your inbox for episode-related material."; status.className="send-status ok"; }
+    else throw new Error();
+  }catch(e){
+    status.textContent = "Results couldn't be submitted — but your profile above is complete.";
+    status.className="send-status err";
+  }
+}
+
+/* ---------- retake ---------- */
+$("btn-retake").addEventListener("click", ()=>{
+  answers.fill(null);
+  current = 0;
+  $("send-status").textContent = "";
+  $("send-status").className = "send-status";
+  renderQuestion();
+  show("test");
+});
+</script>
+</body>
+</html>
