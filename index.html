@@ -246,6 +246,7 @@ input[type=email]:focus{outline:3px solid var(--primary-soft);border-color:var(-
   .spec-row dd{text-align:right}
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -364,14 +365,29 @@ input[type=email]:focus{outline:3px solid var(--primary-soft);border-color:var(-
 
 <script>
 /* =========================================================
-   CONFIGURATION — the one thing you must edit before launch
+   CONFIGURATION — edit these before launch
    =========================================================
+   FORMSPREE (sends results + email to YOU):
    1. Create a free form at https://formspree.io
    2. Copy your form endpoint (looks like https://formspree.io/f/abcdwxyz)
-   3. Paste it below. Every completed test will then land in your
-      Formspree inbox with the taker's email + full scores.
+   3. Paste it below.
 */
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/xpqvqzvj";
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
+
+/* EMAILJS (sends the taker THEIR OWN results):
+   1. Create a free account at https://www.emailjs.com
+   2. Add an Email Service (connect Gmail/Outlook) → copy its Service ID
+   3. Create an Email Template (see instructions below) → copy its Template ID
+   4. Go to Account → General → copy your Public Key
+   5. Paste all three below.
+*/
+const EMAILJS_PUBLIC_KEY  = "YOUR_PUBLIC_KEY";
+const EMAILJS_SERVICE_ID  = "YOUR_SERVICE_ID";
+const EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID";
+
+if(!EMAILJS_PUBLIC_KEY.includes("YOUR_") && window.emailjs){
+  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+}
 
 /* ---------- the eight scales ---------- */
 const SCALES = {
@@ -562,6 +578,10 @@ function finish(){
   submitResults(scores);
 }
 
+/* holds the pieces of the last-rendered profile so the email functions
+   don't have to recompute or scrape the DOM */
+let lastResult = null;
+
 /* ---------- results rendering ---------- */
 function pct(score){ return Math.round((score-4)/16*100); }
 
@@ -591,6 +611,8 @@ function renderResults(scores){
 
   $("profile-name").textContent = profile;
   $("profile-summary").textContent = summary;
+
+  lastResult = { scores, sorted, top2, bottom2, profile, summary };
 
   // spectrum marker: diff range roughly -8..+8 mapped to 0..100
   const pos = Math.max(4, Math.min(96, 50 + (diff/8)*46));
@@ -666,34 +688,85 @@ function buildRadar(scores, keys){
 }
 
 /* ---------- submission ---------- */
+function buildResultsEmailText(){
+  const { scores, top2, bottom2 } = lastResult;
+
+  const strengthsText = top2.map(k =>
+    `${SCALES[k].name} (${pct(scores[k])}%) — ${STRENGTH_LINES[k]}`
+  ).join("\n\n");
+
+  const growthText = bottom2.map(k =>
+    `${SCALES[k].name} (${pct(scores[k])}%)\n${ADVICE[k]}`
+  ).join("\n\n---\n\n");
+
+  const scoresText = lastResult.sorted.map(k =>
+    `${SCALES[k].name}: ${scores[k]}/20 (${pct(scores[k])}%)`
+  ).join("\n");
+
+  return { strengthsText, growthText, scoresText };
+}
+
+async function sendResultsEmail(){
+  if(EMAILJS_PUBLIC_KEY.includes("YOUR_") || !window.emailjs) return {sent:false, skipped:true};
+  const { strengthsText, growthText, scoresText } = buildResultsEmailText();
+  try{
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: userEmail,
+      profile_name: lastResult.profile,
+      profile_summary: lastResult.summary,
+      strengths_text: strengthsText,
+      growth_text: growthText,
+      scores_text: scoresText
+    });
+    return {sent:true};
+  }catch(e){
+    return {sent:false, error:true};
+  }
+}
+
 async function submitResults(scores){
   const status = $("send-status");
-  if(FORMSPREE_ENDPOINT.includes("YOUR_FORM_ID")){
-    status.textContent = "Demo mode — results not submitted (Formspree endpoint not configured).";
-    return;
-  }
   status.textContent = "Saving your results…";
-  const payload = {
-    email: userEmail,
-    profile: $("profile-name").textContent,
-    newsletter_opt_in: userOptIn ? "YES — add to mailing list" : "No",
-    _subject: "WVI-32 result: " + userEmail
-  };
-  Object.keys(SCALES).forEach(k=>{
-    payload[SCALES[k].name] = scores[k] + "/20 (" + pct(scores[k]) + "%)";
-  });
-  payload["raw_answers"] = answers.join(",");
-  try{
-    const res = await fetch(FORMSPREE_ENDPOINT,{
-      method:"POST",
-      headers:{"Content-Type":"application/json","Accept":"application/json"},
-      body: JSON.stringify(payload)
+
+  let formspreeOk = null;
+  if(!FORMSPREE_ENDPOINT.includes("YOUR_FORM_ID")){
+    const payload = {
+      email: userEmail,
+      profile: lastResult.profile,
+      newsletter_opt_in: userOptIn ? "YES — add to mailing list" : "No",
+      _subject: "WVI-32 result: " + userEmail
+    };
+    Object.keys(SCALES).forEach(k=>{
+      payload[SCALES[k].name] = scores[k] + "/20 (" + pct(scores[k]) + "%)";
     });
-    if(res.ok){ status.textContent = "✓ Results saved. Check your inbox for episode-related material."; status.className="send-status ok"; }
-    else throw new Error();
-  }catch(e){
-    status.textContent = "Results couldn't be submitted — but your profile above is complete.";
-    status.className="send-status err";
+    payload["raw_answers"] = answers.join(",");
+    try{
+      const res = await fetch(FORMSPREE_ENDPOINT,{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body: JSON.stringify(payload)
+      });
+      formspreeOk = res.ok;
+    }catch(e){ formspreeOk = false; }
+  }
+
+  const emailResult = await sendResultsEmail();
+
+  // build one clear status line covering both systems
+  if(formspreeOk === null && emailResult.skipped){
+    status.textContent = "Demo mode — neither Formspree nor EmailJS is configured yet.";
+    status.className = "send-status";
+  } else if(emailResult.sent){
+    status.textContent = "✓ Your results have been emailed to you. Check your inbox.";
+    status.className = "send-status ok";
+  } else if(emailResult.skipped){
+    status.textContent = formspreeOk
+      ? "✓ Results saved. (Email-to-you not yet configured.)"
+      : "Results couldn't be submitted — but your profile above is complete.";
+    status.className = formspreeOk ? "send-status ok" : "send-status err";
+  } else {
+    status.textContent = "Your profile is ready above, but we couldn't email a copy — please screenshot this page.";
+    status.className = "send-status err";
   }
 }
 
