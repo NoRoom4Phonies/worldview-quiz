@@ -323,6 +323,11 @@ input[type=email]:focus{outline:3px solid var(--primary-soft);border-color:var(-
     <div class="results-grid">
 
       <div class="panel">
+        <h2>How pronounced is this profile? <span id="intensity-label" style="text-transform:none;letter-spacing:0;color:var(--plum);font-weight:600"></span></h2>
+        <p class="sub" id="intensity-text" style="margin-bottom:0"></p>
+      </div>
+
+      <div class="panel">
         <h2>Orientation map — eight scales</h2>
         <div class="radar-wrap" id="radar"></div>
       </div>
@@ -585,6 +590,34 @@ let lastResult = null;
 /* ---------- results rendering ---------- */
 function pct(score){ return Math.round((score-4)/16*100); }
 
+/* how strongly a single scale is expressed, independent of its rank */
+function bandInfo(p){
+  if(p>=90) return {tag:"Exceptionally strong", lead:"This is about as strongly expressed as this instrument can measure — it's a defining feature of how you move through the world."};
+  if(p>=75) return {tag:"Strongly expressed",   lead:"This is a clear, consistently expressed part of your worldview."};
+  if(p>=55) return {tag:"Solidly present",      lead:"This shows up reliably for you, without being the single most dominant note in your profile."};
+  if(p>=35) return {tag:"Still emerging",       lead:"This is present but not yet a defining feature of how you operate — there's real room to build here."};
+  return       {tag:"Early stage",           lead:"Right now this is the area with the most room to grow."};
+}
+
+/* describes the overall shape of someone's 8 scores — this is what
+   differentiates two people who land on the same profile name */
+function spreadInsight(scores, keys, profileName){
+  const vals = keys.map(k=>pct(scores[k]));
+  const spread = Math.max(...vals) - Math.min(...vals);
+  let label, text;
+  if(spread >= 45){
+    label = "Highly differentiated";
+    text = `Your scores range widely — a ${spread}-point gap between your strongest and quietest scales. That's a meaningful signal on its own: your "${profileName}" result comes from a worldview with a few sharply dominant lenses and a couple of areas that lag well behind, not from a mild, evenly-spread version of that profile. Two people can share a profile name and look quite different underneath it — this is that case.`;
+  } else if(spread >= 25){
+    label = "Moderately differentiated";
+    text = `Your scores show a clear top and bottom, but the overall shape is fairly moderate — a ${spread}-point spread between your strongest and quietest scales. Your defining traits are real, but so are the others; this reads as a worldview with a lean rather than an extreme.`;
+  } else {
+    label = "Evenly balanced";
+    text = `Your eight scores sit close together — only a ${spread}-point spread from top to bottom. Your "${profileName}" result reflects a genuine lean, but it's a mild one: you draw fairly evenly across all eight orientations rather than leading heavily with one or two.`;
+  }
+  return {label, text, spread};
+}
+
 function renderResults(scores){
   const keys = Object.keys(SCALES);
   const sorted = [...keys].sort((a,b)=>scores[b]-scores[a]);
@@ -613,6 +646,10 @@ function renderResults(scores){
   $("profile-summary").textContent = summary;
 
   lastResult = { scores, sorted, top2, bottom2, profile, summary };
+  lastResult.intensity = spreadInsight(scores, keys, profile);
+
+  $("intensity-label").textContent = "— " + lastResult.intensity.label;
+  $("intensity-text").textContent = lastResult.intensity.text;
 
   // spectrum marker: diff range roughly -8..+8 mapped to 0..100
   const pos = Math.max(4, Math.min(96, 50 + (diff/8)*46));
@@ -635,15 +672,19 @@ function renderResults(scores){
   // radar
   $("radar").innerHTML = buildRadar(scores, keys);
 
-  // strengths
-  $("strengths").innerHTML = top2.map(k=>
-    `<p style="margin-bottom:12px"><b>${SCALES[k].name} — ${pct(scores[k])}%.</b> ${STRENGTH_LINES[k]}</p>`
-  ).join("");
+  // strengths — now reflects HOW strongly each scale is expressed, not just its rank
+  $("strengths").innerHTML = top2.map(k=>{
+    const p = pct(scores[k]);
+    const band = bandInfo(p);
+    return `<p style="margin-bottom:14px"><b>${SCALES[k].name} — ${p}%. ${band.tag}.</b> ${band.lead} ${STRENGTH_LINES[k]}</p>`;
+  }).join("");
 
-  // advice for the two lowest scales
-  $("advice").innerHTML = bottom2.map(k=>
-    `<h3><span class="tag">Growth area · ${pct(scores[k])}%</span>${SCALES[k].name}</h3><p>${ADVICE[k]}</p>`
-  ).join("");
+  // advice for the two lowest scales — intensity-aware lead sentence
+  $("advice").innerHTML = bottom2.map(k=>{
+    const p = pct(scores[k]);
+    const band = bandInfo(p);
+    return `<h3><span class="tag">Growth area · ${p}% · ${band.tag}</span>${SCALES[k].name}</h3><p>${band.lead} ${ADVICE[k]}</p>`;
+  }).join("");
 }
 
 function buildRadar(scores, keys){
@@ -689,31 +730,38 @@ function buildRadar(scores, keys){
 
 /* ---------- submission ---------- */
 function buildResultsEmailText(){
-  const { scores, top2, bottom2 } = lastResult;
+  const { scores, top2, bottom2, intensity } = lastResult;
 
-  const strengthsText = top2.map(k =>
-    `${SCALES[k].name} (${pct(scores[k])}%) — ${STRENGTH_LINES[k]}`
-  ).join("\n\n");
+  const strengthsText = top2.map(k => {
+    const p = pct(scores[k]);
+    const band = bandInfo(p);
+    return `${SCALES[k].name} (${p}% — ${band.tag})\n${band.lead} ${STRENGTH_LINES[k]}`;
+  }).join("\n\n");
 
-  const growthText = bottom2.map(k =>
-    `${SCALES[k].name} (${pct(scores[k])}%)\n${ADVICE[k]}`
-  ).join("\n\n---\n\n");
+  const growthText = bottom2.map(k => {
+    const p = pct(scores[k]);
+    const band = bandInfo(p);
+    return `${SCALES[k].name} (${p}% — ${band.tag})\n${band.lead} ${ADVICE[k]}`;
+  }).join("\n\n---\n\n");
 
   const scoresText = lastResult.sorted.map(k =>
     `${SCALES[k].name}: ${scores[k]}/20 (${pct(scores[k])}%)`
   ).join("\n");
 
-  return { strengthsText, growthText, scoresText };
+  const intensityText = `${intensity.label}. ${intensity.text}`;
+
+  return { strengthsText, growthText, scoresText, intensityText };
 }
 
 async function sendResultsEmail(){
   if(EMAILJS_PUBLIC_KEY.includes("YOUR_") || !window.emailjs) return {sent:false, skipped:true};
-  const { strengthsText, growthText, scoresText } = buildResultsEmailText();
+  const { strengthsText, growthText, scoresText, intensityText } = buildResultsEmailText();
   try{
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
       to_email: userEmail,
       profile_name: lastResult.profile,
       profile_summary: lastResult.summary,
+      intensity_text: intensityText,
       strengths_text: strengthsText,
       growth_text: growthText,
       scores_text: scoresText
@@ -733,6 +781,7 @@ async function submitResults(scores){
     const payload = {
       email: userEmail,
       profile: lastResult.profile,
+      profile_intensity: lastResult.intensity.label + " (spread of " + lastResult.intensity.spread + " points)",
       newsletter_opt_in: userOptIn ? "YES — add to mailing list" : "No",
       _subject: "WVI-32 result: " + userEmail
     };
