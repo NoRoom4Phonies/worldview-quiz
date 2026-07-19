@@ -592,11 +592,11 @@ function pct(score){ return Math.round((score-4)/16*100); }
 
 /* how strongly a single scale is expressed, independent of its rank */
 function bandInfo(p){
-  if(p>=90) return {tag:"Exceptionally strong", lead:"This is about as strongly expressed as this instrument can measure — it's a defining feature of how you move through the world."};
-  if(p>=75) return {tag:"Strongly expressed",   lead:"This is a clear, consistently expressed part of your worldview."};
-  if(p>=55) return {tag:"Solidly present",      lead:"This shows up reliably for you, without being the single most dominant note in your profile."};
-  if(p>=35) return {tag:"Still emerging",       lead:"This is present but not yet a defining feature of how you operate — there's real room to build here."};
-  return       {tag:"Early stage",           lead:"Right now this is the area with the most room to grow."};
+  if(p>=90) return {tag:"Off the charts", lead:"This is about as high as it gets on this quiz. It's a huge part of who you are."};
+  if(p>=75) return {tag:"Really strong",  lead:"This shows up clearly and often in how you think and act."};
+  if(p>=55) return {tag:"Pretty solid",   lead:"This is a real part of you — just not your #1 trait."};
+  if(p>=35) return {tag:"Just starting",  lead:"You've got some of this, but it's still developing. There's room to grow here."};
+  return       {tag:"Room to grow",    lead:"Right now, this is the part of your worldview with the most room to grow."};
 }
 
 /* describes the overall shape of someone's 8 scores — this is what
@@ -606,14 +606,14 @@ function spreadInsight(scores, keys, profileName){
   const spread = Math.max(...vals) - Math.min(...vals);
   let label, text;
   if(spread >= 45){
-    label = "Highly differentiated";
-    text = `Your scores range widely — a ${spread}-point gap between your strongest and quietest scales. That's a meaningful signal on its own: your "${profileName}" result comes from a worldview with a few sharply dominant lenses and a couple of areas that lag well behind, not from a mild, evenly-spread version of that profile. Two people can share a profile name and look quite different underneath it — this is that case.`;
+    label = "Big contrasts";
+    text = `Your scores jump around a lot — a ${spread}-point gap between your highest and lowest. That means a couple of things about you are really strong, while a couple of others haven't caught up yet. So even if someone else got the exact same profile name as you, their scores could look totally different underneath. Yours has some sharp highs and lows.`;
   } else if(spread >= 25){
-    label = "Moderately differentiated";
-    text = `Your scores show a clear top and bottom, but the overall shape is fairly moderate — a ${spread}-point spread between your strongest and quietest scales. Your defining traits are real, but so are the others; this reads as a worldview with a lean rather than an extreme.`;
+    label = "A clear lean";
+    text = `Your scores aren't all the same, but they're not wildly different either — a ${spread}-point gap between your highest and lowest. You clearly lean toward some ways of thinking more than others, but nothing scored super low either. It's a real pattern, just not an extreme one.`;
   } else {
-    label = "Evenly balanced";
-    text = `Your eight scores sit close together — only a ${spread}-point spread from top to bottom. Your "${profileName}" result reflects a genuine lean, but it's a mild one: you draw fairly evenly across all eight orientations rather than leading heavily with one or two.`;
+    label = "Pretty even";
+    text = `Your scores are all close together — only a ${spread}-point gap between your highest and lowest. You don't lean hard into just one or two things; you use a mix of all eight ways of thinking pretty evenly. Your profile name still points to your top scores, but it's a gentle lean, not a strong one.`;
   }
   return {label, text, spread};
 }
